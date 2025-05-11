@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 import keras as Keras
 from keras import layers
 from keras import models
@@ -15,7 +13,6 @@ import cv2
 import time
 
 import util
-from six.moves import range
 
 
 
@@ -133,16 +130,16 @@ class UNet() :
     def load(self, loadFrom = '../models/unet_weights.h5') :
         try:
             self.model.load_weights(loadFrom)
-            print('Loaded.')
+            print 'Loaded.'
             return True
         except:
-            print('Failed to load.')
-            print(sys.exc_info()[0])
+            print 'Failed to load.'
+            print sys.exc_info()[0]
             return False
 
 
     def train(self, trainPath = None, trainset = None, saveTo = '../models/unet_weights.h5', model_args = None):
-        print('Training!!')
+        print 'Training!!'
         if trainset is None :
             trainset = util.ImageDataset(trainPath)
 
@@ -157,27 +154,27 @@ class UNet() :
         imgList = trainset.imgList
         maskList = trainset.maskList
         
-        print('Treating output masks...')
+        print 'Treating output masks...'
         maskList = self.treat_mask(maskList)
-        print('Done treating.')
+        print 'Done treating.'
 
-        print(imgList.shape)
-        print(maskList.shape)
+        print imgList.shape
+        print maskList.shape
         earlystopper = callbacks.EarlyStopping(patience=5, verbose=1)
         checkpointer = callbacks.ModelCheckpoint(saveTo, verbose=1, save_best_only=True)
         results = self.model.fit(imgList, maskList, batch_size=batch_size, epochs=epochs, 
                                 callbacks=[earlystopper, checkpointer])
         
         self.model.save_weights(saveTo)
-        print(self.model.summary())
+        print self.model.summary()
 
     def treat_mask(self, mask_list) :
         new_list = []
         
         
         total = len(mask_list)
-        for i in range(len(mask_list)) :
-            print('%d/%d... \r' % (i, total))
+        for i in xrange(len(mask_list)) :
+            print '%d/%d... \r' % (i, total)
             new_mask = util.treat_mask(mask_list[i])
 
             new_list.append(new_mask)
@@ -204,22 +201,22 @@ def __test1__() :
     args = util.Settings()
     trainPath = args.settings['datasets']['train']
 
-    print('Loading images')
+    print 'Loading images'
     trainset = util.ImageDataset(trainPath)
     imgList, maskList = trainset.get_images()
 
-    print('Creating U-Net')
+    print 'Creating U-Net'
     model = UNet()
 
     if not model.load() :
-        print('Creating and Training')
+        print 'Creating and Training'
         model.train(trainset = trainset)
     else :
-        print('Loaded')
-    print(model.model.summary())
-    print(imgList[0].shape)
+        print 'Loaded'
+    print model.model.summary()
+    print imgList[0].shape
     ret = model.run(trainset.imgList[0])
-    print(ret.shape)
+    print ret.shape
     cv2.imshow('gota',ret)
     cv2.waitKey(0)
 

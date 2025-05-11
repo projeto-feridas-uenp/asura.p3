@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 import os
 import json
 
@@ -7,7 +5,6 @@ import cv2
 import numpy as np
 import keras
 import csv
-from six.moves import range
 
 
 def treat_mask(mask) :
@@ -68,7 +65,7 @@ class Settings() :
 
         http://stackoverflow.com/questions/7204805/dictionaries-of-dictionaries-merge
         '''
-        for k in set(dict1.keys()).union(list(dict2.keys())):
+        for k in set(dict1.keys()).union(dict2.keys()):
             if k in dict1 and k in dict2:
                 if isinstance(dict1[k], dict) and isinstance(dict2[k], dict):
                     yield (k, dict(self.mergedicts(dict1[k], dict2[k])))
@@ -131,7 +128,7 @@ class ImageDataset() :
         else :
             use_fold = [k_fold]
 
-        print(use_fold)
+        print use_fold
 
         imgPath = os.path.join(file_path, 'src/img')
         maskPath = os.path.join(file_path, 'src/gt')
@@ -139,9 +136,9 @@ class ImageDataset() :
             if key not in use_fold : 
                 continue
             for filename in self.folds_list[key] :
-                print(filename)
+                print filename
                 if filename in ignore_list :
-                    print('skipping', filename)
+                    print 'skipping', filename
                     continue
                 
                 if resize != (0,0) :
@@ -159,14 +156,14 @@ class ImageDataset() :
                 
 
             if ignore_augmentation == False :
-                print('loading augmentation')
+                print 'loading augmentation'
                 aug_imgPath = os.path.join(file_path, 'aug/%s/img' % (key))
                 aug_maskPath = os.path.join(file_path, 'aug/%s/gt' % (key))
 
 
                 self.filenameList.append(filename)
-                print(aug_imgPath)
-                print(aug_maskPath)
+                print aug_imgPath
+                print aug_maskPath
 
                 for filePath in os.listdir(aug_imgPath, ) :
             
@@ -176,7 +173,7 @@ class ImageDataset() :
 
                     tmp = os.path.splitext(filePath)
                     curFilename = tmp[0]
-                    print(curFilename)
+                    print curFilename
                     self.filenameList.append(curFilename)
                     #print curFilename
                     if resize != (0,0) :
@@ -204,13 +201,13 @@ class ImageDataset() :
         img_resized = []
         mask_resized = []
 
-        for i in range(len(self.imgList)) :
-            print(i, self.imgList[i].shape, new_size)
+        for i in xrange(len(self.imgList)) :
+            print i, self.imgList[i].shape, new_size
             img_resized.append(cv2.resize(self.imgList[i], new_size))
         
-        print('done')
+        print 'done'
 
-        for i in range(len(self.maskList)) :
+        for i in xrange(len(self.maskList)) :
             if self.maskList[i] is not None :
                 mask_resized.append(cv2.resize(self.maskList[i], new_size))
         
@@ -229,12 +226,12 @@ class ImageDataset() :
         np.random.seed(seed)
         nImg = len(self.filenameList)
 
-        for i in range(nImg) :
+        for i in xrange(nImg) :
             curFilename = self.filenameList[i]
-            print(self.file_folds[curFilename])
+            print self.file_folds[curFilename]
             key = self.file_folds[curFilename]
 
-            print(curFilename, key)
+            print curFilename, key
 
             dstImg = os.path.join(self.dataset_path, 'aug/%s/img' %(key)) 
             dstGt = os.path.join(self.dataset_path, 'aug/%s/gt' %(key)) 

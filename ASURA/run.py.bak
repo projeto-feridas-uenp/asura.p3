@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 import sys
 import os
 import argparse
@@ -13,7 +11,6 @@ import keras
 import src.util
 import src.metrics
 import src.unet
-from six.moves import range
 
 #os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
 #os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -22,10 +19,10 @@ from six.moves import range
 def getMethod(model_args = None, dataset = None):
     model = None
     if model_args is None :
-        print('Invalid method.')
+        print 'Invalid method.'
         exit()
     elif model_args['model_type'] == 'unet' :
-        print('Creating U-Net')
+        print 'Creating U-Net'
         model = src.unet.UNet()
         loadFrom = model.create_model_filename(dataset, model_args)
         model.load(loadFrom)
@@ -36,17 +33,17 @@ def training(dataset_path, dataset_name, k_fold = '1', model_args = None) :
         os.makedirs('./models')
 
     if model_args is None :
-        print('Invalid model.')
+        print 'Invalid model.'
         exit()
     elif model_args['model_type'] == 'unet' :
-        print('Creating U-Net')
+        print 'Creating U-Net'
         model = src.unet.UNet()
 
         trainset = src.util.ImageDataset(dataset_path, dataset_name = dataset_name, k_fold = k_fold, resize = (512, 512), training = True, ignore_augmentation = False)
         
     
     saveTo = model.create_model_filename(trainset, model_args)
-    print(saveTo)
+    print saveTo
     model.train(trainset = trainset, saveTo = saveTo, model_args = model_args)
     
 
@@ -56,12 +53,12 @@ def runSegmentation(dataset_path, dataset_name, k_fold = '1', model_args = None)
     method = getMethod(model_args, dataset)
 
     output_path = method.create_output_path(dataset, model_args)
-    print(output_path)
+    print output_path
     if not os.path.isdir(output_path) :
         os.makedirs(output_path)
 
-    for i in range(dataset.get_size()) :
-        print(i, dataset.get_size(), dataset.filenameList[i])
+    for i in xrange(dataset.get_size()) :
+        print i, dataset.get_size(), dataset.filenameList[i]
         img = dataset.imgList[i]
         mask = dataset.maskList[i]
         filename = dataset.filenameList[i]+'_out.png'
@@ -74,7 +71,7 @@ def runSingleSegmentation(in_image, in_model, out_image = None) :
     if out_image is not None :
         output_path = out_image
 
-    print(in_image, in_model, out_image)
+    print in_image, in_model, out_image
     
     method = src.unet.UNet()
     method.load(in_model)
@@ -89,9 +86,9 @@ def runSingleSegmentation(in_image, in_model, out_image = None) :
 def evaluateOutput(datasets):
     ds = dict()
     for names in datasets:
-        print(names)
+        print names
         datasetPath = datasets[names]
-        print(datasetPath)
+        print datasetPath
         dataset = src.util.ImageDataset(datasetPath, dataset_name = names, k_fold='0', training = True)
         ds[names] = dataset
 
@@ -100,45 +97,45 @@ def evaluateOutput(datasets):
     for ds_folder in os.listdir(root_folder) :
         if ds_folder not in ds : 
             continue
-        print(ds_folder)
+        print ds_folder
         full_ds_folder = os.path.join(root_folder, ds_folder)
-        print(full_ds_folder)
+        print full_ds_folder
         if not os.path.isdir(full_ds_folder) :
             continue
         for method_folder in os.listdir(full_ds_folder) :
-            print(method_folder)
+            print method_folder
             full_method_folder = os.path.join(full_ds_folder, method_folder)
             if not os.path.isdir(full_method_folder) :
                 continue
             filename = ds_folder + '_' + method_folder + '.csv'
-            print(filename)
+            print filename
             if os.path.isfile(os.path.join(root_folder, filename)) :
-                print('Already calculated, skipping.')
+                print 'Already calculated, skipping.'
                 continue
             res_list = []
             with open(os.path.join(root_folder, filename), 'w') as fFolder:
-                print('#Filename,Jaccard,Dice_Coefficient,Accuracy,Precision,Recall,F_Measure', file=fFolder)
+                print >> fFolder, '#Filename,Jaccard,Dice_Coefficient,Accuracy,Precision,Recall,F_Measure'
                 curTotal = ds[ds_folder].get_size()
-                for i in range(ds[ds_folder].get_size()) :
+                for i in xrange(ds[ds_folder].get_size()) :
                     #print ds[ds_folder].filenameList[i]
                     cur_file = ds[ds_folder].filenameList[i] + '_out.png'
                     if not os.path.isfile(os.path.join(full_method_folder,cur_file)) :
-                        print('Failed to load %s.' % (cur_file))
+                        print 'Failed to load %s.' % (cur_file)
                         continue
                     ret = cv2.imread(os.path.join(full_method_folder,cur_file), )
                     ret = cv2.cvtColor(ret, cv2.COLOR_BGR2RGB)
 
                     results = list(src.metrics.calculate_metrics(ret, ds[ds_folder].maskList[i]))
-                    print('\r%d/%d' % (i, curTotal))
+                    print '\r%d/%d' % (i, curTotal)
                     res_list.append(results)
-                    print('%s,%s' % (ds[ds_folder].filenameList[i], ','.join(str(e) for e in results)), file=fFolder)
+                    print >> fFolder, '%s,%s' % (ds[ds_folder].filenameList[i], ','.join(str(e) for e in results))
             res_list = np.array(res_list)
             
             mean_res = np.mean(res_list, axis = 0)
             std_res = np.std(res_list, axis = 0)
             inter = np.ravel(np.column_stack((mean_res,std_res)))
             with open('./output/results.csv','a') as fResults :
-                print('%s,%s' % (filename, ','.join(str(e) for e in inter)), file=fResults)
+                print >> fResults, '%s,%s' % (filename, ','.join(str(e) for e in inter))
                 
 
 def data_augmentation(dataset_path, n_variations = 5) :

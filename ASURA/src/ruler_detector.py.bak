@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 import numpy as np
 import cv2
 import scipy
@@ -7,7 +5,6 @@ import scipy.signal
 import math
 
 import util
-from six.moves import range
 
 def rotate_image(mat, angle):
     """
@@ -58,7 +55,7 @@ def detect_regions(mask) :
     #print output[2]
     regions = []
     areas = []
-    for k in range(output[0]) :
+    for k in xrange(output[0]) :
         tmp = np.zeros(ruler.shape)
         cur_blob = output[1] == k
         if np.sum(np.logical_and(cur_blob,blobs)) == 0 :
@@ -217,7 +214,7 @@ def get_ticks(edge) :
     #plt.show()
     ret = np.ones(edge.shape)
     
-    for i in range(len(lines)) :
+    for i in xrange(len(lines)) :
         if np.abs(angles[i] - mean) > 3*std :
             continue
         #print angles[i]
@@ -255,10 +252,10 @@ def is_collinear(p0, p1, p2) :
 
 def merge_lines(lines, width, min_h = 2) :
     union_find = np.arange(len(lines))
-    print(len(lines))
-    for i in range(len(lines)) :
+    print len(lines)
+    for i in xrange(len(lines)) :
         p = lines[i]
-        for j in range(i+1, len(lines)) :
+        for j in xrange(i+1, len(lines)) :
             if i == j :
                 continue
             p1 = lines[j]
@@ -304,7 +301,7 @@ def get_tick_distance(img, lines, width) :
     dists = []
     
     ret = np.copy(img)
-    for i in range(t) :
+    for i in xrange(t) :
         indexes = np.logical_and(width >= lower, width < minimums[0][i])
         cur_lines = lines[indexes]
         if len(cur_lines) < 2 :
@@ -329,7 +326,7 @@ def get_tick_distance(img, lines, width) :
 def paint_ticks_and_calculate_dist(img, lines, cur_color) :
 
     dists = get_lines_distance(lines)
-    print(len(dists))
+    print len(dists)
     if len(dists) == 1 :
         cur_dist = dists[0]
     else :
@@ -368,9 +365,9 @@ def get_lines_distance(lines) :
     t = len(lines)
     dist = np.full(t, np.inf)
     
-    for i in range(t) :
+    for i in xrange(t) :
         p = lines[i]
-        for j in range(i+1,t) :
+        for j in xrange(i+1,t) :
             p1 = lines[j]
             d = distance_point_line(p[:2], p1)
             if d < 0 :
@@ -407,7 +404,7 @@ def threshold_adjuster(image, minCut = 255) :
     T = 1
     i = 0
     image = image[image<minCut]
-    for i in range(1,254) :
+    for i in xrange(1,254) :
         m_l = np.mean(image[image<i])
         m_h = np.mean(image[image>i])
         #print m_l, m_h

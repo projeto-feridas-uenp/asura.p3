@@ -1,11 +1,9 @@
-from __future__ import absolute_import
-from __future__ import print_function
 import sys
 import os
 import argparse
 
-from six.moves.tkinter import *
-import six.moves.tkinter, six.moves.tkinter_constants
+from Tkinter import *
+import Tkinter, Tkconstants
 
 import numpy as np
 import cv2
@@ -14,7 +12,6 @@ from PIL import ImageTk, Image
 
 import src.util
 import src.ruler_detector
-from six.moves import range
 
 ignore_list = []
 
@@ -32,7 +29,7 @@ def imagetk_fromarray(img, ratio = None) :
 
 def load_dataset_segmentation(dataset_path, dataset_name, method) :
     global image_dataset, seg_list, max_image_index, ruler_imgs, dist_imgs, marked_imgs, real_dists, est_dists, max_ruler_index
-    print(dataset_path, dataset_name)
+    print dataset_path, dataset_name
     image_dataset = src.util.ImageDataset(dataset_path, dataset_name = dataset_name, k_fold = '0', training = True, ignore_list = ignore_list)
     max_image_index = image_dataset.get_size()
     
@@ -46,19 +43,19 @@ def load_dataset_segmentation(dataset_path, dataset_name, method) :
     if os.path.isfile(est_dists_path) :
         s = open(est_dists_path, 'r').read()
         est_dists = eval(s)
-    print(est_dists)
-    print(real_dists)
+    print est_dists
+    print real_dists
 
     seg_path = './output/%s/%s' % (dataset_name, method)
-    print(seg_path)
+    print seg_path
     seg_list = []
-    for i in range(image_dataset.get_size()) :
-        print(image_dataset.filenameList[i])
+    for i in xrange(image_dataset.get_size()) :
+        print image_dataset.filenameList[i]
         if not use_gt :
             seg_filename = image_dataset.filenameList[i] + '_out.png'
             full_seg_path = os.path.join(seg_path,seg_filename)
             if not os.path.isfile(full_seg_path) :
-                print('You must run method <%s> on <%s> dataset before using this script.' % (method, dataset_name))
+                print 'You must run method <%s> on <%s> dataset before using this script.' % (method, dataset_name)
                 exit()
             img = cv2.imread(full_seg_path, )
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -67,9 +64,9 @@ def load_dataset_segmentation(dataset_path, dataset_name, method) :
         ruler_imgs[image_dataset.filenameList[i]] = []
         dist_imgs[image_dataset.filenameList[i]] = []
         marked_imgs[image_dataset.filenameList[i]] = []
-        for j in range(20) :
+        for j in xrange(20) :
             full_ruler_img_path = os.path.join(ruler_path, image_dataset.filenameList[i] + '_ruler_%d.jpg' %(j))
-            print(full_ruler_img_path)
+            print full_ruler_img_path
             if os.path.isfile(full_ruler_img_path) :
                 img = cv2.imread(full_ruler_img_path, )
                 r_img = np.copy(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
@@ -88,22 +85,22 @@ def load_dataset_segmentation(dataset_path, dataset_name, method) :
                 img = cv2.imread(full_marked_img_path, )
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                 marked_imgs[image_dataset.filenameList[i]].append(img)
-                print('Loaded marked')
+                print 'Loaded marked'
             else :
                 marked_imgs[image_dataset.filenameList[i]].append(r_img)
         max_ruler_index[image_dataset.filenameList[i]] = len(ruler_imgs[image_dataset.filenameList[i]])
 
-    print(len(ruler_imgs), len(dist_imgs), len(marked_imgs))
+    print len(ruler_imgs), len(dist_imgs), len(marked_imgs)
 
             
 
 def process_all_rulers() :
-    for i in range(image_dataset.get_size()) :
+    for i in xrange(image_dataset.get_size()) :
         process_image_rulers(i)
         
         
     with open(est_dists_path, 'w') as f:
-        print(str(est_dists), file=f)
+        print >> f, str(est_dists)
 
 
 def process_image_rulers(index = 0) :
@@ -116,7 +113,7 @@ def process_image_rulers(index = 0) :
     else :
         curSeg = seg_list[index]
     if len(ruler_imgs[curFilename]) == 0 :
-        print('Processing', curFilename)
+        print 'Processing', curFilename
         ruler_imgs[curFilename] = []
         dist_imgs[curFilename] = []
         est_dists[curFilename] = []
@@ -130,7 +127,7 @@ def process_image_rulers(index = 0) :
             except Exception as error:
                 if repr(error).find('My exception') >= 0 :
                     break
-                print(('Caught this error: ' + repr(error)))
+                print('Caught this error: ' + repr(error))
                 continue 
 
             ruler_imgs[curFilename].append(cur_ruler)
@@ -187,21 +184,21 @@ def save_ruler(event = None) :
     cv2.imwrite(full_marked_img_path, img)
 
     with open(real_dists_path, 'w') as f:
-        print(str(real_dists), file=f)
+        print >> f, str(real_dists)
 
 def save_real_ruler_and_next_image(event = None) :
     save_ruler()
 
-    print('save_ruler')
+    print 'save_ruler'
     next_image()
 
 def save_real_ruler_and_next_ruler(event = None) :
     save_ruler()
 
-    print('save_ruler')
-    print(cur_ruler_index)
+    print 'save_ruler'
+    print cur_ruler_index
     next_ruler()
-    print(cur_ruler_index)
+    print cur_ruler_index
     if cur_ruler_index == 0 :
         next_image()
 
@@ -231,7 +228,7 @@ def update_images(event = None) :
 
     labelFilename.config(text='Filename %d/%d: %s'% (cur_image_index, max_image_index, curFilename))
    
-    print(est_dists)
+    print est_dists
     if curFilename in real_dists :
         labelRuler.config(text = 'Ruler %d: %s' % (cur_ruler_index, str(real_dists[curFilename][cur_ruler_index])))
         
