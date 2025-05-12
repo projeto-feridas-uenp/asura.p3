@@ -6,7 +6,7 @@ import scipy
 import scipy.signal
 import math
 
-import util
+from src import util
 from six.moves import range
 
 def rotate_image(mat, angle):

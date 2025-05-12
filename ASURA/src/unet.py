@@ -14,7 +14,7 @@ import cv2
 
 import time
 
-import util
+from src import util
 from six.moves import range
 
 
